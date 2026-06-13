@@ -1,5 +1,6 @@
 import { calculateCost } from "./pricing";
 import { StorageAdapter } from "./adapters/memory";
+import { LimitExceededError } from "./errors";
 
 export interface UsageStats {
   todayUSD: number;
@@ -30,12 +31,22 @@ export class SpendTracker {
     return `spend:month:${year}-${month}`;
   }
 
+  private getUserDayKey(userId: string): string {
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = String(now.getUTCMonth() + 1).padStart(2, "0");
+    const day = String(now.getUTCDate()).padStart(2, "0");
+    return `user:${userId}:daily:${year}-${month}-${day}`;
+  }
+
+  // Token counts are passed from API response.usage (extracted in guard.ts)
   async recordSpend(
     model: string,
     inputTokens: number,
     outputTokens: number,
     userId?: string,
-    customPricing?: any
+    customPricing?: any,
+    userDailyLimit?: number
   ): Promise<number> {
     const cost = calculateCost(
       model,
@@ -57,6 +68,20 @@ export class SpendTracker {
 
     if (userId) {
       await this.storage.increment(`spend:user:${userId}`, cost);
+
+      // Persist user daily spend and enforce userDailyLimit
+      const userDayKey = this.getUserDayKey(userId);
+      const userSpend = await this.storage.increment(userDayKey, cost);
+      await this.storage.set(userDayKey, userSpend, DAILY_TTL_SECONDS);
+
+      if (userDailyLimit && userSpend > userDailyLimit) {
+        throw new LimitExceededError(
+          `User ${userId} daily limit of $${userDailyLimit.toFixed(2)} exceeded. Current spend: $${userSpend.toFixed(4)}`,
+          "user",
+          userSpend,
+          userDailyLimit
+        );
+      }
     }
 
     return cost;

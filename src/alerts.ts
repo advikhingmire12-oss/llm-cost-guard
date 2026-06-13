@@ -1,0 +1,32 @@
+export interface AlertPayload {
+  event:
+    | "warn_threshold_reached"
+    | "limit_reached"
+    | "per_request_limit_reached"
+    | "user_limit_reached";
+  currentSpendUSD: number;
+  limitUSD: number;
+  warnAtUSD?: number;
+  timestamp: string;
+  provider: string;
+  userId?: string;
+}
+
+export async function sendAlert(
+  webhookUrl: string,
+  payload: AlertPayload
+): Promise<void> {
+  try {
+    await fetch(webhookUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch (error) {
+    console.warn(
+      `[llm-cost-guard] Failed to send alert to webhook: ${
+        error instanceof Error ? error.message : String(error)
+      }`
+    );
+  }
+}

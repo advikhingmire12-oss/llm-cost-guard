@@ -10,6 +10,7 @@ export const PRICING: Record<
   "gpt-3.5-turbo": { inputPerMillion: 0.5, outputPerMillion: 1.5 },
   "gemini-1.5-pro": { inputPerMillion: 3.5, outputPerMillion: 10.5 },
   "gemini-1.5-flash": { inputPerMillion: 0.075, outputPerMillion: 0.3 },
+  "gemini-2.0-flash": { inputPerMillion: 0.1, outputPerMillion: 0.4 },
 };
 
 export function calculateCost(

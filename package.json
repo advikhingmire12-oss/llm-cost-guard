@@ -1,15 +1,31 @@
 {
-  "name": "llm-cost-guard",
+  "name": "@advik1228/llm-cost-guard",
   "version": "0.1.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./adapters": {
+      "require": "./dist/adapters/redis.js",
+      "types": "./dist/adapters/redis.d.ts"
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
-    "tiktoken": "^1.0.15"
+    "redis": "^4.7.0"
   },
   "devDependencies": {
     "typescript": "^5.4.0",

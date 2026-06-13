@@ -13,3 +13,5 @@ export function getStats(): Promise<UsageStats> {
 
 export { guardImpl as guard, estimateCost, LimitExceededError, PreflightError };
 export type { GuardConfig, UsageStats };
+export { sendAlert, AlertPayload } from "./alerts";
+export { RedisAdapter } from "./adapters/redis";
