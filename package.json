@@ -1,6 +1,6 @@
 {
   "name": "@advik1228/llm-cost-guard",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -39,5 +39,16 @@
     "@types/jest": "^29.0.0"
   },
   "license": "MIT",
-  "keywords": ["llm", "openai", "anthropic", "claude", "cost", "budget", "middleware", "token", "api", "guard"]
+  "keywords": [
+    "llm",
+    "openai",
+    "anthropic",
+    "claude",
+    "cost",
+    "budget",
+    "middleware",
+    "token",
+    "api",
+    "guard"
+  ]
 }
