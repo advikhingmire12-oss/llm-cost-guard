@@ -17,11 +17,16 @@ export async function sendAlert(
   payload: AlertPayload
 ): Promise<void> {
   try {
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
+    if (!response.ok) {
+      console.warn(
+        `[llm-cost-guard] Webhook returned ${response.status}: ${response.statusText}`
+      );
+    }
   } catch (error) {
     console.warn(
       `[llm-cost-guard] Failed to send alert to webhook: ${

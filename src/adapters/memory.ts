@@ -32,9 +32,19 @@ export class MemoryAdapter implements StorageAdapter {
   }
 
   async increment(key: string, by: number): Promise<number> {
+    const entry = this.store.get(key);
     const current = await this.get(key);
     const newValue = current + by;
-    await this.set(key, newValue);
+
+    let ttlSeconds: number | undefined;
+    if (entry?.expiresAt !== undefined) {
+      ttlSeconds = Math.max(
+        0,
+        Math.ceil((entry.expiresAt - Date.now()) / 1000)
+      );
+    }
+
+    await this.set(key, newValue, ttlSeconds);
     return newValue;
   }
 }

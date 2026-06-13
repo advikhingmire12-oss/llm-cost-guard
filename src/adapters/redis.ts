@@ -24,7 +24,8 @@ export class RedisAdapter implements StorageAdapter {
     if (value === null) {
       return 0;
     }
-    return parseFloat(value);
+    const parsed = parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 
   async set(key: string, value: number, ttlSeconds?: number): Promise<void> {
@@ -40,6 +41,7 @@ export class RedisAdapter implements StorageAdapter {
 
   async increment(key: string, by: number): Promise<number> {
     const result = await this.redis.incrByFloat(this.prefixKey(key), by);
-    return parseFloat(result);
+    const parsed = parseFloat(result);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 }

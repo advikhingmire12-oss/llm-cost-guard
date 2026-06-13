@@ -262,6 +262,30 @@ async function runStreamingPreflightCheck(
       );
     }
   }
+
+  if (
+    config.userId &&
+    config.userDailyLimit !== undefined &&
+    estimate.estimatedCostUSD > 0
+  ) {
+    const userDaySpend = await tracker.getUserDaySpend(config.userId);
+    const projectedUserSpend = userDaySpend + estimate.estimatedCostUSD;
+    if (projectedUserSpend > config.userDailyLimit) {
+      const action = config.onLimit ?? "throw";
+      if (action === "throw") {
+        throw new LimitExceededError(
+          `User ${config.userId} daily limit would be exceeded (estimated): $${projectedUserSpend.toFixed(4)} > $${config.userDailyLimit}`,
+          "user",
+          projectedUserSpend,
+          config.userDailyLimit
+        );
+      } else if (action === "warn") {
+        console.warn(
+          `[llm-cost-guard] User ${config.userId} daily limit would be exceeded (estimated): $${projectedUserSpend.toFixed(4)} > $${config.userDailyLimit}`
+        );
+      }
+    }
+  }
 }
 
 function captureStreamTokens(

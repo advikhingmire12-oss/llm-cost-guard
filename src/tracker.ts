@@ -55,6 +55,20 @@ export class SpendTracker {
       customPricing
     );
 
+    if (userId && userDailyLimit !== undefined) {
+      const userDayKey = this.getUserDayKey(userId);
+      const currentUserSpend = await this.storage.get(userDayKey);
+      const projectedUserSpend = currentUserSpend + cost;
+      if (projectedUserSpend > userDailyLimit) {
+        throw new LimitExceededError(
+          `User ${userId} daily limit of $${userDailyLimit.toFixed(2)} exceeded. Current spend: $${projectedUserSpend.toFixed(4)}`,
+          "user",
+          projectedUserSpend,
+          userDailyLimit
+        );
+      }
+    }
+
     const dayKey = this.getDayKey();
     const daySpend = await this.storage.increment(dayKey, cost);
     await this.storage.set(dayKey, daySpend, DAILY_TTL_SECONDS);
@@ -69,22 +83,16 @@ export class SpendTracker {
     if (userId) {
       await this.storage.increment(`spend:user:${userId}`, cost);
 
-      // Persist user daily spend and enforce userDailyLimit
       const userDayKey = this.getUserDayKey(userId);
       const userSpend = await this.storage.increment(userDayKey, cost);
       await this.storage.set(userDayKey, userSpend, DAILY_TTL_SECONDS);
-
-      if (userDailyLimit && userSpend > userDailyLimit) {
-        throw new LimitExceededError(
-          `User ${userId} daily limit of $${userDailyLimit.toFixed(2)} exceeded. Current spend: $${userSpend.toFixed(4)}`,
-          "user",
-          userSpend,
-          userDailyLimit
-        );
-      }
     }
 
     return cost;
+  }
+
+  async getUserDaySpend(userId: string): Promise<number> {
+    return this.storage.get(this.getUserDayKey(userId));
   }
 
   async getDaySpend(): Promise<number> {
